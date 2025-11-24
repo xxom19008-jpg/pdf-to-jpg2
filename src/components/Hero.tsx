@@ -74,23 +74,29 @@ export const Hero = () => {
     }
 
     setIsConverting(true);
-    toast.info("Converting your PDF to JPG...");
+    const toastId = toast.loading("Converting your PDF to JPG...");
     
     try {
+      console.log('Starting conversion for:', selectedFile.name);
+      console.log('Quality setting:', quality);
+      
       const pages = await convertPDFToJPG(
         selectedFile,
         quality as 'high' | 'medium' | 'low',
         (current, total) => {
           console.log(`Converting page ${current}/${total}`);
+          toast.loading(`Converting page ${current}/${total}...`, { id: toastId });
         }
       );
       
+      console.log('Conversion complete. Pages:', pages.length);
       setConvertedPages(pages);
       setConversionComplete(true);
-      toast.success(`Successfully converted ${pages.length} pages!`);
+      toast.success(`Successfully converted ${pages.length} pages!`, { id: toastId });
     } catch (error) {
       console.error('Conversion error:', error);
-      toast.error("Failed to convert PDF. Please try again.");
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      toast.error(`Failed to convert PDF: ${errorMessage}`, { id: toastId });
     } finally {
       setIsConverting(false);
     }

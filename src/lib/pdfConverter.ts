@@ -1,8 +1,7 @@
 import * as pdfjsLib from 'pdfjs-dist';
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry';
 
-// Configure PDF.js worker using local worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+// Configure PDF.js worker - use jsdelivr CDN which is more reliable
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 
 export interface ConvertedPage {
   pageNumber: number;
@@ -15,18 +14,28 @@ export const convertPDFToJPG = async (
   quality: 'high' | 'medium' | 'low',
   onProgress?: (current: number, total: number) => void
 ): Promise<ConvertedPage[]> => {
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  const totalPages = pdf.numPages;
-  const convertedPages: ConvertedPage[] = [];
+  try {
+    console.log('Reading PDF file...');
+    const arrayBuffer = await file.arrayBuffer();
+    
+    console.log('Loading PDF document...');
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const totalPages = pdf.numPages;
+    console.log(`PDF loaded. Total pages: ${totalPages}`);
+    
+    const convertedPages: ConvertedPage[] = [];
 
   // Quality settings
   const scale = quality === 'high' ? 2.0 : quality === 'medium' ? 1.5 : 1.0;
   const jpegQuality = quality === 'high' ? 0.95 : quality === 'medium' ? 0.85 : 0.75;
 
+  console.log(`Quality settings - Scale: ${scale}, JPEG: ${jpegQuality}`);
+
   for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-    const page = await pdf.getPage(pageNum);
-    const viewport = page.getViewport({ scale });
+    try {
+      console.log(`Processing page ${pageNum}...`);
+      const page = await pdf.getPage(pageNum);
+      const viewport = page.getViewport({ scale });
 
     // Create canvas
     const canvas = document.createElement('canvas');
@@ -44,7 +53,9 @@ export const convertPDFToJPG = async (
       viewport: viewport,
     };
     
+    console.log(`Rendering page ${pageNum}...`);
     await page.render(renderContext).promise;
+    console.log(`Page ${pageNum} rendered successfully`);
 
     // Convert canvas to blob
     const blob = await new Promise<Blob>((resolve, reject) => {
@@ -67,13 +78,24 @@ export const convertPDFToJPG = async (
       blob,
     });
 
+    console.log(`Page ${pageNum} converted successfully`);
+
     // Report progress
     if (onProgress) {
       onProgress(pageNum, totalPages);
     }
+    } catch (pageError) {
+      console.error(`Error converting page ${pageNum}:`, pageError);
+      throw new Error(`Failed to convert page ${pageNum}: ${pageError instanceof Error ? pageError.message : 'Unknown error'}`);
+    }
   }
 
+  console.log('All pages converted successfully');
   return convertedPages;
+  } catch (error) {
+    console.error('PDF conversion error:', error);
+    throw error;
+  }
 };
 
 export const downloadJPG = (blob: Blob, filename: string) => {
