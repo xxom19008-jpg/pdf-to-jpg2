@@ -2,10 +2,15 @@ import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
+import { ConversionSettings } from "./ConversionSettings";
 
 export const Hero = () => {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [quality, setQuality] = useState("high");
+  const [convertAllPages, setConvertAllPages] = useState(true);
+  const [createZip, setCreateZip] = useState(true);
+  const [isConverting, setIsConverting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDrag = (e: React.DragEvent) => {
@@ -54,6 +59,22 @@ export const Hero = () => {
 
   const handleButtonClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleConvert = async () => {
+    if (!selectedFile) {
+      toast.error("Please select a PDF file first");
+      return;
+    }
+
+    setIsConverting(true);
+    toast.info("Converting your PDF to JPG...");
+    
+    // Simulate conversion process (we'll implement actual conversion later)
+    setTimeout(() => {
+      setIsConverting(false);
+      toast.success("Conversion completed! Download ready.");
+    }, 2000);
   };
 
   return (
@@ -113,6 +134,21 @@ export const Hero = () => {
                 )}
               </div>
             </div>
+
+            {/* Conversion Settings - Show only after file is selected */}
+            {selectedFile && (
+              <ConversionSettings
+                quality={quality}
+                setQuality={setQuality}
+                convertAllPages={convertAllPages}
+                setConvertAllPages={setConvertAllPages}
+                createZip={createZip}
+                setCreateZip={setCreateZip}
+                onConvert={handleConvert}
+                isConverting={isConverting}
+                disabled={!selectedFile}
+              />
+            )}
           </div>
         </div>
       </div>
