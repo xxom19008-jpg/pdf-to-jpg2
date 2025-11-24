@@ -18,6 +18,10 @@ interface ConversionSettingsProps {
   setConvertAllPages: (value: boolean) => void;
   selectedPages: string;
   setSelectedPages: (value: string) => void;
+  selectedPageNumbers: number[];
+  togglePageSelection: (pageNumber: number) => void;
+  previewPages: { pageNumber: number; imageUrl: string }[];
+  isLoadingPreview: boolean;
   createZip: boolean;
   setCreateZip: (value: boolean) => void;
   onConvert: () => void;
@@ -32,6 +36,10 @@ export const ConversionSettings = ({
   setConvertAllPages,
   selectedPages,
   setSelectedPages,
+  selectedPageNumbers,
+  togglePageSelection,
+  previewPages,
+  isLoadingPreview,
   createZip,
   setCreateZip,
   onConvert,
@@ -83,24 +91,65 @@ export const ConversionSettings = ({
             />
           </div>
           
-          {/* Page Selection Input - Show when "Convert all pages" is OFF */}
+          {/* Page Selection - Show when "Convert all pages" is OFF */}
           {!convertAllPages && (
-            <div className="mt-4 space-y-2">
-              <Label htmlFor="page-selection" className="text-sm font-medium">
-                Select Pages
-              </Label>
-              <Input
-                id="page-selection"
-                type="text"
-                placeholder="e.g., 1-3, 5, 7-10"
-                value={selectedPages}
-                onChange={(e) => setSelectedPages(e.target.value)}
-                disabled={disabled}
-                className="w-full"
-              />
-              <p className="text-xs text-muted-foreground">
-                Enter page numbers or ranges separated by commas
-              </p>
+            <div className="mt-4">
+              {isLoadingPreview ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  <span className="ml-2 text-sm text-muted-foreground">Loading previews...</span>
+                </div>
+              ) : previewPages.length > 0 ? (
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">
+                    Select Pages ({selectedPageNumbers.length} selected)
+                  </Label>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 max-h-96 overflow-y-auto p-2 border border-border rounded-lg">
+                    {previewPages.map((page) => (
+                      <button
+                        key={page.pageNumber}
+                        type="button"
+                        onClick={() => togglePageSelection(page.pageNumber)}
+                        className={`relative group cursor-pointer rounded-lg overflow-hidden border-2 transition-all hover:scale-105 ${
+                          selectedPageNumbers.includes(page.pageNumber)
+                            ? 'border-primary shadow-lg'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                        disabled={disabled}
+                      >
+                        <div className="aspect-[3/4] bg-white">
+                          <img
+                            src={page.imageUrl}
+                            alt={`Page ${page.pageNumber}`}
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <div className={`absolute bottom-0 left-0 right-0 py-1 text-xs font-medium text-center ${
+                          selectedPageNumbers.includes(page.pageNumber)
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-background/90 text-foreground'
+                        }`}>
+                          {page.pageNumber}
+                        </div>
+                        {selectedPageNumbers.includes(page.pageNumber) && (
+                          <div className="absolute top-1 right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-primary-foreground" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Click on page thumbnails to select/deselect
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center py-4 text-sm text-muted-foreground">
+                  No preview available
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { ConversionSettings } from "./ConversionSettings";
 import { DownloadResults } from "./DownloadResults";
-import { convertPDFToJPG, type ConvertedPage } from "@/lib/pdfConverter";
+import { convertPDFToJPG, generatePDFPreviews, type ConvertedPage } from "@/lib/pdfConverter";
 
 export const Hero = () => {
   const [dragActive, setDragActive] = useState(false);
@@ -12,10 +12,13 @@ export const Hero = () => {
   const [quality, setQuality] = useState("high");
   const [convertAllPages, setConvertAllPages] = useState(true);
   const [selectedPages, setSelectedPages] = useState("");
+  const [selectedPageNumbers, setSelectedPageNumbers] = useState<number[]>([]);
   const [createZip, setCreateZip] = useState(true);
   const [isConverting, setIsConverting] = useState(false);
   const [conversionComplete, setConversionComplete] = useState(false);
   const [convertedPages, setConvertedPages] = useState<ConvertedPage[]>([]);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+  const [previewPages, setPreviewPages] = useState<{ pageNumber: number; imageUrl: string }[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDrag = (e: React.DragEvent) => {
@@ -38,7 +41,7 @@ export const Hero = () => {
     }
   };
 
-  const handleFile = (file: File) => {
+  const handleFile = async (file: File) => {
     // Validate file type
     if (file.type !== "application/pdf") {
       toast.error("Please upload a PDF file");
@@ -55,7 +58,21 @@ export const Hero = () => {
     setSelectedFile(file);
     setConversionComplete(false);
     setConvertedPages([]);
+    setPreviewPages([]);
+    setSelectedPageNumbers([]);
     toast.success(`Selected: ${file.name}`);
+    
+    // Generate previews
+    setIsLoadingPreview(true);
+    try {
+      const previews = await generatePDFPreviews(file);
+      setPreviewPages(previews);
+    } catch (error) {
+      console.error('Preview generation error:', error);
+      toast.error("Failed to generate previews");
+    } finally {
+      setIsLoadingPreview(false);
+    }
   };
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,9 +89,24 @@ export const Hero = () => {
     setSelectedFile(null);
     setConversionComplete(false);
     setConvertedPages([]);
+    setPreviewPages([]);
+    setSelectedPageNumbers([]);
+    setSelectedPages("");
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  const togglePageSelection = (pageNumber: number) => {
+    setSelectedPageNumbers(prev => {
+      const newSelection = prev.includes(pageNumber)
+        ? prev.filter(p => p !== pageNumber)
+        : [...prev, pageNumber].sort((a, b) => a - b);
+      
+      // Update selectedPages string
+      setSelectedPages(newSelection.join(', '));
+      return newSelection;
+    });
   };
 
   const handleConvert = async () => {
@@ -93,7 +125,7 @@ export const Hero = () => {
       const pages = await convertPDFToJPG(
         selectedFile,
         quality as 'high' | 'medium' | 'low',
-        convertAllPages ? undefined : selectedPages,
+        convertAllPages ? undefined : selectedPageNumbers.join(', '),
         (current, total) => {
           console.log(`Converting page ${current}/${total}`);
           toast.loading(`Converting page ${current}/${total}...`, { id: toastId });
@@ -189,6 +221,10 @@ export const Hero = () => {
                 setConvertAllPages={setConvertAllPages}
                 selectedPages={selectedPages}
                 setSelectedPages={setSelectedPages}
+                selectedPageNumbers={selectedPageNumbers}
+                togglePageSelection={togglePageSelection}
+                previewPages={previewPages}
+                isLoadingPreview={isLoadingPreview}
                 createZip={createZip}
                 setCreateZip={setCreateZip}
                 onConvert={handleConvert}

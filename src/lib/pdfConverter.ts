@@ -116,6 +116,51 @@ export const convertPDFToJPG = async (
   }
 };
 
+export const generatePDFPreviews = async (file: File): Promise<{ pageNumber: number; imageUrl: string }[]> => {
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const totalPages = pdf.numPages;
+    const previews: { pageNumber: number; imageUrl: string }[] = [];
+
+    // Low quality preview for speed
+    const scale = 0.5;
+
+    for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const viewport = page.getViewport({ scale });
+
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+
+      if (!context) continue;
+
+      await page.render({ canvasContext: context, viewport }).promise;
+
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          (b) => {
+            if (b) resolve(b);
+            else reject(new Error('Failed to create preview'));
+          },
+          'image/jpeg',
+          0.6
+        );
+      });
+
+      const imageUrl = URL.createObjectURL(blob);
+      previews.push({ pageNumber: pageNum, imageUrl });
+    }
+
+    return previews;
+  } catch (error) {
+    console.error('Preview generation error:', error);
+    throw error;
+  }
+};
+
 export const downloadJPG = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
