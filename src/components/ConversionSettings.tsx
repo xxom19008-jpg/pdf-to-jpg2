@@ -61,15 +61,8 @@ export const ConversionSettings = ({
         </div>
 
         {/* Convert All Pages Toggle */}
-        <div className="flex items-start gap-4 py-4 border-t border-border">
-          <Switch
-            id="all-pages"
-            checked={convertAllPages}
-            onCheckedChange={setConvertAllPages}
-            disabled={disabled}
-            className="shrink-0 mt-0.5"
-          />
-          <div className="space-y-1 flex-1">
+        <div className="flex items-center justify-between py-4 border-t border-border">
+          <div className="space-y-1">
             <Label htmlFor="all-pages" className="text-sm font-medium cursor-pointer">
               Convert all pages
             </Label>
@@ -77,18 +70,18 @@ export const ConversionSettings = ({
               Convert every page in your PDF to separate JPG images
             </p>
           </div>
+          <Switch
+            id="all-pages"
+            checked={convertAllPages}
+            onCheckedChange={setConvertAllPages}
+            disabled={disabled}
+            className="shrink-0"
+          />
         </div>
 
         {/* Create ZIP Toggle */}
-        <div className="flex items-start gap-4 py-4 border-t border-border">
-          <Switch
-            id="create-zip"
-            checked={createZip}
-            onCheckedChange={setCreateZip}
-            disabled={disabled}
-            className="shrink-0 mt-0.5"
-          />
-          <div className="space-y-1 flex-1">
+        <div className="flex items-center justify-between py-4 border-t border-border">
+          <div className="space-y-1">
             <Label htmlFor="create-zip" className="text-sm font-medium cursor-pointer">
               Download as ZIP
             </Label>
@@ -96,6 +89,13 @@ export const ConversionSettings = ({
               Combine all JPG files into a single ZIP archive
             </p>
           </div>
+          <Switch
+            id="create-zip"
+            checked={createZip}
+            onCheckedChange={setCreateZip}
+            disabled={disabled}
+            className="shrink-0"
+          />
         </div>
 
         {/* Convert Button */}
