@@ -1,7 +1,6 @@
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import heroImage from "@/assets/hero-pdf-converter.jpg";
 
 export const Hero = () => {
   const [dragActive, setDragActive] = useState(false);
@@ -26,8 +25,8 @@ export const Hero = () => {
   return (
     <section className="relative overflow-hidden bg-gradient-hero py-20 lg:py-32">
       <div className="container mx-auto px-4">
-        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
-          <div className="text-center lg:text-left animate-fade-in">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center animate-fade-in">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
               <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
               Free Online Tool
@@ -35,7 +34,7 @@ export const Hero = () => {
             <h1 className="text-4xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
               PDF to JPG Converter
             </h1>
-            <p className="text-lg lg:text-xl text-muted-foreground mb-8 max-w-2xl">
+            <p className="text-lg lg:text-xl text-muted-foreground mb-8">
               Convert your PDF pages into high-quality JPG images instantly. No signup required.
             </p>
             
@@ -68,14 +67,6 @@ export const Hero = () => {
                 </Button>
               </div>
             </div>
-          </div>
-
-          <div className="hidden lg:block animate-fade-in">
-            <img
-              src={heroImage}
-              alt="PDF to JPG conversion illustration"
-              className="w-full h-auto rounded-2xl shadow-hover"
-            />
           </div>
         </div>
       </div>
