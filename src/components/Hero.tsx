@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { ConversionSettings } from "./ConversionSettings";
+import { DownloadResults } from "./DownloadResults";
 
 export const Hero = () => {
   const [dragActive, setDragActive] = useState(false);
@@ -11,6 +12,8 @@ export const Hero = () => {
   const [convertAllPages, setConvertAllPages] = useState(true);
   const [createZip, setCreateZip] = useState(true);
   const [isConverting, setIsConverting] = useState(false);
+  const [conversionComplete, setConversionComplete] = useState(false);
+  const [pageCount, setPageCount] = useState(3); // Demo: 3 pages
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDrag = (e: React.DragEvent) => {
@@ -48,6 +51,7 @@ export const Hero = () => {
     }
     
     setSelectedFile(file);
+    setConversionComplete(false); // Reset conversion state when new file is selected
     toast.success(`Selected: ${file.name}`);
   };
 
@@ -73,7 +77,8 @@ export const Hero = () => {
     // Simulate conversion process (we'll implement actual conversion later)
     setTimeout(() => {
       setIsConverting(false);
-      toast.success("Conversion completed! Download ready.");
+      setConversionComplete(true);
+      toast.success("Conversion completed! Ready to download.");
     }, 2000);
   };
 
@@ -135,8 +140,8 @@ export const Hero = () => {
               </div>
             </div>
 
-            {/* Conversion Settings - Show only after file is selected */}
-            {selectedFile && (
+            {/* Conversion Settings - Show only after file is selected and before conversion */}
+            {selectedFile && !conversionComplete && (
               <ConversionSettings
                 quality={quality}
                 setQuality={setQuality}
@@ -147,6 +152,16 @@ export const Hero = () => {
                 onConvert={handleConvert}
                 isConverting={isConverting}
                 disabled={!selectedFile}
+              />
+            )}
+
+            {/* Download Results - Show after conversion is complete */}
+            {conversionComplete && selectedFile && (
+              <DownloadResults
+                fileName={selectedFile.name}
+                pageCount={pageCount}
+                quality={quality}
+                createZip={createZip}
               />
             )}
           </div>
