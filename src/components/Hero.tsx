@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { ConversionSettings } from "./ConversionSettings";
 import { DownloadResults } from "./DownloadResults";
+import { convertPDFToJPG, type ConvertedPage } from "@/lib/pdfConverter";
 
 export const Hero = () => {
   const [dragActive, setDragActive] = useState(false);
@@ -13,7 +14,7 @@ export const Hero = () => {
   const [createZip, setCreateZip] = useState(true);
   const [isConverting, setIsConverting] = useState(false);
   const [conversionComplete, setConversionComplete] = useState(false);
-  const [pageCount, setPageCount] = useState(3); // Demo: 3 pages
+  const [convertedPages, setConvertedPages] = useState<ConvertedPage[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDrag = (e: React.DragEvent) => {
@@ -51,7 +52,8 @@ export const Hero = () => {
     }
     
     setSelectedFile(file);
-    setConversionComplete(false); // Reset conversion state when new file is selected
+    setConversionComplete(false);
+    setConvertedPages([]);
     toast.success(`Selected: ${file.name}`);
   };
 
@@ -74,12 +76,24 @@ export const Hero = () => {
     setIsConverting(true);
     toast.info("Converting your PDF to JPG...");
     
-    // Simulate conversion process (we'll implement actual conversion later)
-    setTimeout(() => {
-      setIsConverting(false);
+    try {
+      const pages = await convertPDFToJPG(
+        selectedFile,
+        quality as 'high' | 'medium' | 'low',
+        (current, total) => {
+          console.log(`Converting page ${current}/${total}`);
+        }
+      );
+      
+      setConvertedPages(pages);
       setConversionComplete(true);
-      toast.success("Conversion completed! Ready to download.");
-    }, 2000);
+      toast.success(`Successfully converted ${pages.length} pages!`);
+    } catch (error) {
+      console.error('Conversion error:', error);
+      toast.error("Failed to convert PDF. Please try again.");
+    } finally {
+      setIsConverting(false);
+    }
   };
 
   return (
@@ -156,12 +170,12 @@ export const Hero = () => {
             )}
 
             {/* Download Results - Show after conversion is complete */}
-            {conversionComplete && selectedFile && (
+            {conversionComplete && selectedFile && convertedPages.length > 0 && (
               <DownloadResults
                 fileName={selectedFile.name}
-                pageCount={pageCount}
                 quality={quality}
                 createZip={createZip}
+                convertedPages={convertedPages}
               />
             )}
           </div>
