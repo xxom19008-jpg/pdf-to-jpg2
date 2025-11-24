@@ -11,6 +11,7 @@ export const Hero = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [quality, setQuality] = useState("high");
   const [convertAllPages, setConvertAllPages] = useState(true);
+  const [selectedPages, setSelectedPages] = useState("");
   const [createZip, setCreateZip] = useState(true);
   const [isConverting, setIsConverting] = useState(false);
   const [conversionComplete, setConversionComplete] = useState(false);
@@ -92,6 +93,7 @@ export const Hero = () => {
       const pages = await convertPDFToJPG(
         selectedFile,
         quality as 'high' | 'medium' | 'low',
+        convertAllPages ? undefined : selectedPages,
         (current, total) => {
           console.log(`Converting page ${current}/${total}`);
           toast.loading(`Converting page ${current}/${total}...`, { id: toastId });
@@ -185,6 +187,8 @@ export const Hero = () => {
                 setQuality={setQuality}
                 convertAllPages={convertAllPages}
                 setConvertAllPages={setConvertAllPages}
+                selectedPages={selectedPages}
+                setSelectedPages={setSelectedPages}
                 createZip={createZip}
                 setCreateZip={setCreateZip}
                 onConvert={handleConvert}

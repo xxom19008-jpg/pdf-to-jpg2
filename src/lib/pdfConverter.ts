@@ -1,5 +1,6 @@
 import * as pdfjsLib from 'pdfjs-dist';
 import JSZip from 'jszip';
+import { parsePageSelection } from './pageParser';
 
 // Configure PDF.js worker - use jsdelivr CDN which is more reliable
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
@@ -13,6 +14,7 @@ export interface ConvertedPage {
 export const convertPDFToJPG = async (
   file: File,
   quality: 'high' | 'medium' | 'low',
+  pageSelection?: string,
   onProgress?: (current: number, total: number) => void
 ): Promise<ConvertedPage[]> => {
   try {
@@ -24,6 +26,20 @@ export const convertPDFToJPG = async (
     const totalPages = pdf.numPages;
     console.log(`PDF loaded. Total pages: ${totalPages}`);
     
+    // Parse page selection
+    let pagesToConvert: number[] = [];
+    
+    if (pageSelection && pageSelection.trim()) {
+      pagesToConvert = parsePageSelection(pageSelection, totalPages);
+      if (pagesToConvert.length === 0) {
+        throw new Error('Invalid page selection. Please use format like: 1-3, 5, 7-10');
+      }
+      console.log('Pages to convert:', pagesToConvert);
+    } else {
+      // Convert all pages
+      pagesToConvert = Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    
     const convertedPages: ConvertedPage[] = [];
 
   // Quality settings
@@ -32,7 +48,8 @@ export const convertPDFToJPG = async (
 
   console.log(`Quality settings - Scale: ${scale}, JPEG: ${jpegQuality}`);
 
-  for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+  for (let i = 0; i < pagesToConvert.length; i++) {
+    const pageNum = pagesToConvert[i];
     try {
       console.log(`Processing page ${pageNum}...`);
       const page = await pdf.getPage(pageNum);
@@ -83,7 +100,7 @@ export const convertPDFToJPG = async (
 
     // Report progress
     if (onProgress) {
-      onProgress(pageNum, totalPages);
+      onProgress(i + 1, pagesToConvert.length);
     }
     } catch (pageError) {
       console.error(`Error converting page ${pageNum}:`, pageError);

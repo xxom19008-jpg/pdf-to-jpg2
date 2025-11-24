@@ -8,6 +8,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 
 interface ConversionSettingsProps {
@@ -15,6 +16,8 @@ interface ConversionSettingsProps {
   setQuality: (value: string) => void;
   convertAllPages: boolean;
   setConvertAllPages: (value: boolean) => void;
+  selectedPages: string;
+  setSelectedPages: (value: string) => void;
   createZip: boolean;
   setCreateZip: (value: boolean) => void;
   onConvert: () => void;
@@ -27,6 +30,8 @@ export const ConversionSettings = ({
   setQuality,
   convertAllPages,
   setConvertAllPages,
+  selectedPages,
+  setSelectedPages,
   createZip,
   setCreateZip,
   onConvert,
@@ -61,20 +66,43 @@ export const ConversionSettings = ({
         </div>
 
         {/* Convert All Pages Toggle */}
-        <div className="flex items-center justify-between py-4 border-t border-border">
-          <div className="flex flex-col gap-0">
-            <p className="text-sm font-medium leading-tight mb-1">Convert all pages</p>
-            <p className="text-xs text-muted-foreground leading-tight">
-              Convert every page in your PDF to separate JPG images
-            </p>
+        <div className="py-4 border-t border-border">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-0">
+              <p className="text-sm font-medium leading-tight mb-1">Convert all pages</p>
+              <p className="text-xs text-muted-foreground leading-tight">
+                Convert every page in your PDF to separate JPG images
+              </p>
+            </div>
+            <Switch
+              id="all-pages"
+              checked={convertAllPages}
+              onCheckedChange={setConvertAllPages}
+              disabled={disabled}
+              className="shrink-0"
+            />
           </div>
-          <Switch
-            id="all-pages"
-            checked={convertAllPages}
-            onCheckedChange={setConvertAllPages}
-            disabled={disabled}
-            className="shrink-0"
-          />
+          
+          {/* Page Selection Input - Show when "Convert all pages" is OFF */}
+          {!convertAllPages && (
+            <div className="mt-4 space-y-2">
+              <Label htmlFor="page-selection" className="text-sm font-medium">
+                Select Pages
+              </Label>
+              <Input
+                id="page-selection"
+                type="text"
+                placeholder="e.g., 1-3, 5, 7-10"
+                value={selectedPages}
+                onChange={(e) => setSelectedPages(e.target.value)}
+                disabled={disabled}
+                className="w-full"
+              />
+              <p className="text-xs text-muted-foreground">
+                Enter page numbers or ranges separated by commas
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Create ZIP Toggle */}
