@@ -1,4 +1,5 @@
 import * as pdfjsLib from 'pdfjs-dist';
+import JSZip from 'jszip';
 
 // Configure PDF.js worker - use jsdelivr CDN which is more reliable
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
@@ -110,13 +111,24 @@ export const downloadJPG = (blob: Blob, filename: string) => {
 };
 
 export const downloadAllAsZip = async (pages: ConvertedPage[], originalFilename: string) => {
-  // For now, download sequentially
-  // In a real app, you'd use JSZip library
+  const zip = new JSZip();
   const baseFilename = originalFilename.replace('.pdf', '');
   
-  pages.forEach((page, index) => {
-    setTimeout(() => {
-      downloadJPG(page.blob, `${baseFilename}_page_${page.pageNumber}.jpg`);
-    }, index * 300);
+  // Add all pages to ZIP
+  pages.forEach((page) => {
+    zip.file(`${baseFilename}_page_${page.pageNumber}.jpg`, page.blob);
   });
+  
+  // Generate ZIP file
+  const zipBlob = await zip.generateAsync({ type: 'blob' });
+  
+  // Download ZIP
+  const url = URL.createObjectURL(zipBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${baseFilename}.zip`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 };
