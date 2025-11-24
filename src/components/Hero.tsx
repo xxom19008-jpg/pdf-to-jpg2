@@ -1,4 +1,4 @@
-import { Upload } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
@@ -65,6 +65,15 @@ export const Hero = () => {
 
   const handleButtonClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    setConversionComplete(false);
+    setConvertedPages([]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleConvert = async () => {
@@ -153,9 +162,18 @@ export const Hero = () => {
                   className="hidden"
                 />
                 {selectedFile && (
-                  <p className="text-sm text-primary font-medium mt-2">
-                    ✓ {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-                  </p>
+                  <div className="flex items-center gap-2 mt-2 px-4 py-2 bg-primary/10 rounded-lg border border-primary/20">
+                    <p className="text-sm text-primary font-medium flex-1">
+                      ✓ {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                    </p>
+                    <button
+                      onClick={handleRemoveFile}
+                      className="text-primary hover:text-primary/80 transition-colors p-1 hover:bg-primary/10 rounded"
+                      aria-label="Remove file"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
