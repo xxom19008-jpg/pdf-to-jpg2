@@ -1,9 +1,12 @@
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { toast } from "sonner";
 
 export const Hero = () => {
   const [dragActive, setDragActive] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -19,7 +22,38 @@ export const Hero = () => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    // Handle file drop
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleFile = (file: File) => {
+    // Validate file type
+    if (file.type !== "application/pdf") {
+      toast.error("Please upload a PDF file");
+      return;
+    }
+    
+    // Validate file size (20MB max)
+    const maxSize = 20 * 1024 * 1024; // 20MB in bytes
+    if (file.size > maxSize) {
+      toast.error("File size must be less than 20MB");
+      return;
+    }
+    
+    setSelectedFile(file);
+    toast.success(`Selected: ${file.name}`);
+  };
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      handleFile(e.target.files[0]);
+    }
+  };
+
+  const handleButtonClick = () => {
+    fileInputRef.current?.click();
   };
 
   return (
@@ -62,9 +96,21 @@ export const Hero = () => {
                     Supports: PDF • Max file size: 20MB
                   </p>
                 </div>
-                <Button size="lg" className="mt-4">
+                <Button size="lg" className="mt-4" onClick={handleButtonClick}>
                   Select File
                 </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="application/pdf"
+                  onChange={handleFileInput}
+                  className="hidden"
+                />
+                {selectedFile && (
+                  <p className="text-sm text-primary font-medium mt-2">
+                    ✓ {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                  </p>
+                )}
               </div>
             </div>
           </div>
