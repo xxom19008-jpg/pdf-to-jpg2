@@ -62,7 +62,7 @@ export const ConversionSettings = ({
 
         {/* Convert All Pages Toggle */}
         <div className="flex items-center justify-between py-4 border-t border-border">
-          <div className="space-y-1">
+          <div className="space-y-1 flex-1 pr-4">
             <Label htmlFor="all-pages" className="text-sm font-medium cursor-pointer">
               Convert all pages
             </Label>
@@ -75,12 +75,13 @@ export const ConversionSettings = ({
             checked={convertAllPages}
             onCheckedChange={setConvertAllPages}
             disabled={disabled}
+            className="shrink-0"
           />
         </div>
 
         {/* Create ZIP Toggle */}
         <div className="flex items-center justify-between py-4 border-t border-border">
-          <div className="space-y-1">
+          <div className="space-y-1 flex-1 pr-4">
             <Label htmlFor="create-zip" className="text-sm font-medium cursor-pointer">
               Download as ZIP
             </Label>
@@ -93,6 +94,7 @@ export const ConversionSettings = ({
             checked={createZip}
             onCheckedChange={setCreateZip}
             disabled={disabled}
+            className="shrink-0"
           />
         </div>
 
