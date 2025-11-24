@@ -62,9 +62,9 @@ export const ConversionSettings = ({
 
         {/* Convert All Pages Toggle */}
         <div className="flex items-center justify-between py-4 border-t border-border">
-          <div className="flex flex-col">
-            <p className="text-sm font-medium mb-1">Convert all pages</p>
-            <p className="text-xs text-muted-foreground">
+          <div className="flex flex-col gap-0">
+            <p className="text-sm font-medium leading-tight mb-1">Convert all pages</p>
+            <p className="text-xs text-muted-foreground leading-tight">
               Convert every page in your PDF to separate JPG images
             </p>
           </div>
@@ -79,9 +79,9 @@ export const ConversionSettings = ({
 
         {/* Create ZIP Toggle */}
         <div className="flex items-center justify-between py-4 border-t border-border">
-          <div className="flex flex-col">
-            <p className="text-sm font-medium mb-1">Download as ZIP</p>
-            <p className="text-xs text-muted-foreground">
+          <div className="flex flex-col gap-0">
+            <p className="text-sm font-medium leading-tight mb-1">Download as ZIP</p>
+            <p className="text-xs text-muted-foreground leading-tight">
               Combine all JPG files into a single ZIP archive
             </p>
           </div>
